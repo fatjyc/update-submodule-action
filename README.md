@@ -23,6 +23,11 @@ Automatically update submodule
 
 ## Example usage
 
+```
 uses: fatjyc/update-submodule-action@v1.0
 with:
-  who-to-greet: 'Mona the Octocat'
+  user: ${{ user }}
+  token: ${{ secrets.GH_TOKEN }}
+  repo_owner: ${{ repo_owner }}
+  repo: ${{ repo }}
+```
