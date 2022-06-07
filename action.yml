@@ -1,0 +1,18 @@
+name: Update submodule
+description: Automatically update submodule
+inputs:
+  pusher:
+    description: The GitHub API user
+    required: true
+  token:
+    description: The GitHub API token to use
+    required: true
+  repo:
+    description: The Remote Repo
+    required: true
+  repo_owner:
+    description: The Remote Repo Owner
+    required: true
+runs:
+  using: docker
+  image: Dockerfile
