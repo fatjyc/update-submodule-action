@@ -20,6 +20,17 @@ Automatically update submodule
 
 **Required** The Remote Repo Owner
 
+## `committor_username`
+
+**Required** Commitor Username
+
+## `committor_email`
+
+**Required** Commitor Email
+
+## `target_branch`
+
+**Required** Target Branch
 
 ## Example usage
 
@@ -30,4 +41,7 @@ with:
   token: ${{ secrets.GH_TOKEN }}
   repo_owner: ${{ repo_owner }}
   repo: ${{ repo }}
+  committor_username: xxx
+  committor_email: xxx@xx.com
+  target_branch: main
 ```
