@@ -32,6 +32,10 @@ Automatically update submodule
 
 **Required** Target Branch
 
+## `path`
+
+**Required** Submodule path
+
 ## Example usage
 
 ```
@@ -44,4 +48,5 @@ with:
   committor_username: xxx
   committor_email: xxx@xx.com
   target_branch: main
+  path: repo_name
 ```

@@ -8,8 +8,10 @@ cd ${INPUT_REPO}
 git config user.email ${INPUT_COMMITTOR_USERNAME}
 git config user.name ${INPUT_COMMITTOR_EMAIL}
 
+echo "Update ${INPUT_PATH}"
+
 git submodule update --init --recursive
-git submodule update --remote --remote
+git submodule update --remote --merge ${INPUT_PATH}
 
 git add .
 git commit -m "update ${GITHUB_REPOSITORY} submodule"
