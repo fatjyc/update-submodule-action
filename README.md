@@ -28,10 +28,6 @@ Automatically update submodule
 
 **Required** Commitor Email
 
-## `target_branch`
-
-**Required** Target Branch
-
 ## `path`
 
 **Required** Submodule path
@@ -47,6 +43,5 @@ with:
   repo: ${{ repo }}
   committor_username: xxx
   committor_email: xxx@xx.com
-  target_branch: main
   path: repo_name
 ```
