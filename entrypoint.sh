@@ -5,11 +5,11 @@ echo "Update git submodule"
 git clone "https://${INPUT_USER}:${INPUT_TOKEN}@github.com/${INPUT_REPO_OWNER}/${INPUT_REPO}.git"
 cd ${INPUT_REPO}
 
-git checkout ${GITHUB_REF_NAME}
+git checkout ${INPUT_SYNC_REF}
 
 if [ $? != 0 ]
 then
-    echo "${GITHUB_REF_NAME} not exists"
+    echo "${INPUT_SYNC_REF} not exists"
     exit 1
 fi
 
@@ -22,9 +22,9 @@ git submodule update --init --recursive
 git submodule update --remote --merge ${INPUT_PATH}
 
 cd ${INPUT_PATH}
-git checkout ${GITHUB_REF_NAME}
+git checkout ${INPUT_SYNC_REF}
 cd ..
 
 git add .
 git commit -m "update ${GITHUB_REPOSITORY} submodule"
-git push "https://${INPUT_USER}:${INPUT_TOKEN}@github.com/${INPUT_REPO_OWNER}/${INPUT_REPO}.git" ${GITHUB_REF_NAME}
+git push "https://${INPUT_USER}:${INPUT_TOKEN}@github.com/${INPUT_REPO_OWNER}/${INPUT_REPO}.git" ${INPUT_SYNC_REF}
