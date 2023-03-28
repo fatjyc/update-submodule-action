@@ -39,7 +39,7 @@ Automatically update submodule
 ## Example usage
 
 ```
-uses: fatjyc/update-submodule-action@v1.0
+uses: fatjyc/update-submodule-action@v6.0
 with:
   user: ${{ user }}
   token: ${{ secrets.GH_TOKEN }}
