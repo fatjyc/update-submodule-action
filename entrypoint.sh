@@ -18,20 +18,25 @@ git config user.name ${INPUT_COMMITTOR_EMAIL}
 
 echo "Update ${INPUT_PATH}"
 
-
-old_submodule_version=$(git submodule status "$INPUT_PATH" | awk '{print $1}' | cut -c 2-)
-
-
 git submodule update --init --recursive
+
+old_submodule_version=$(git submodule status "$INPUT_PATH" | awk '{print $1}')
+echo "old version: ${old_submodule_version}"
+
 git submodule update --remote --merge ${INPUT_PATH}
-
-new_submodule_version=$(git submodule status "$INPUT_PATH" | awk '{print $1}' | cut -c 2-)
-
-commit_msg=$(git log --pretty=%B "$old_submodule_version..$new_submodule_version")
 
 cd ${INPUT_PATH}
 git checkout ${INPUT_SYNC_REF}
 cd ..
+
+new_submodule_version=$(git submodule status "$INPUT_PATH" | awk '{print $1}')
+echo "new version: ${new_submodule_version}"
+
+cd ${INPUT_PATH}
+commit_msg=$(git log --pretty=%B "$old_submodule_version..$new_submodule_version")
+cd ..
+
+echo "commit msg: ${commit_msg}"
 
 git add .
 git commit -m "Update ${INPUT_PATH}: ${commit_msg}"
