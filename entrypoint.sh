@@ -29,7 +29,7 @@ cd ${INPUT_PATH}
 git checkout ${INPUT_SYNC_REF}
 cd ..
 
-new_submodule_version=$(git submodule status "$INPUT_PATH" | awk '{print $1}')
+new_submodule_version=$(git submodule status "$INPUT_PATH" | awk '{print $1}' | cut -c 2-)
 echo "new version: ${new_submodule_version}"
 
 cd ${INPUT_PATH}
