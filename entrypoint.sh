@@ -36,8 +36,13 @@ cd ${INPUT_PATH}
 commit_msg=$(git log --pretty=%B "$old_submodule_version..$new_submodule_version")
 cd ..
 
+
 echo "commit msg: ${commit_msg}"
 
+new_commit_msg=$(echo "$commit_msg" | sed -e "s/Merge pull request #\([0-9]\+\)/Merge pull request $GITHUB_REPOSITORY#\1/g")
+
+echo "new commit msg: ${new_commit_msg}"
+
 git add .
-git commit -m "Update ${INPUT_PATH}: ${commit_msg}"
+git commit -m "Update ${INPUT_PATH}: ${new_commit_msg}"
 git push "https://${INPUT_USER}:${INPUT_TOKEN}@github.com/${INPUT_REPO_OWNER}/${INPUT_REPO}.git" ${INPUT_SYNC_REF}
