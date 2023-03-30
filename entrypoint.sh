@@ -5,11 +5,11 @@ echo "Update git submodule"
 git clone "https://${INPUT_USER}:${INPUT_TOKEN}@github.com/${INPUT_REPO_OWNER}/${INPUT_REPO}.git"
 cd ${INPUT_REPO}
 
-git checkout ${INPUT_SYNC_REF}
+git checkout ${GITHUB_REF_NAME}
 
 if [ $? != 0 ]
 then
-    echo "${INPUT_SYNC_REF} not exists"
+    echo "${GITHUB_REF_NAME} not exists"
     exit 1
 fi
 
@@ -26,7 +26,7 @@ echo "old version: ${old_submodule_version}"
 git submodule update --remote --merge ${INPUT_PATH}
 
 cd ${INPUT_PATH}
-git checkout ${INPUT_SYNC_REF}
+git checkout ${GITHUB_REF_NAME}
 cd ..
 
 new_submodule_version=$(git submodule status "$INPUT_PATH" | awk '{print $1}' | cut -c 2-)
@@ -46,5 +46,5 @@ new_commit_msg=$(echo "$commit_msg" | sed -E "s/Merge pull request #([0-9]+)/Mer
 echo "new commit msg: ${new_commit_msg}"
 
 git add .
-git commit -m "Update ${INPUT_PATH}: ${new_commit_msg}"
-git push "https://${INPUT_USER}:${INPUT_TOKEN}@github.com/${INPUT_REPO_OWNER}/${INPUT_REPO}.git" ${INPUT_SYNC_REF}
+git commit -m "update ${INPUT_PATH}: ${new_commit_msg}"
+git push "https://${INPUT_USER}:${INPUT_TOKEN}@github.com/${INPUT_REPO_OWNER}/${INPUT_REPO}.git" ${GITHUB_REF_NAME}

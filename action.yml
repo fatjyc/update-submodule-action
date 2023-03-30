@@ -22,9 +22,6 @@ inputs:
   path:
     description: Submodule path
     required: true
-  sync_ref:
-    description: Sync Ref name
-    required: true
 branding:
   icon: anchor
   color: purple

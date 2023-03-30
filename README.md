@@ -32,10 +32,6 @@ Automatically update submodule
 
 **Required** Submodule path
 
-## `sync_ref`
-
-**Required** Sync Ref name
-
 ## Example usage
 
 ```
@@ -48,5 +44,4 @@ with:
   committor_username: xxx
   committor_email: xxx@xx.com
   path: repo_name
-  sync_ref: main
 ```
