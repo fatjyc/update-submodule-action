@@ -39,7 +39,9 @@ cd ..
 
 echo "commit msg: ${commit_msg}"
 
-new_commit_msg=$(echo "$commit_msg" | sed -E 's/Merge pull request #\([0-9]\+\)/Merge pull request '"$GITHUB_REPOSITORY"'#\1/g')
+repo=$(echo $GITHUB_REPOSITORY | sed 's/\//\\\//g')
+
+new_commit_msg=$(echo "$commit_msg" | sed -E "s/Merge pull request #([0-9]+)/Merge pull request $repo#\1/g")
 
 echo "new commit msg: ${new_commit_msg}"
 
