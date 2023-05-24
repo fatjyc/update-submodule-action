@@ -41,7 +41,7 @@ echo "commit msg: ${commit_msg}"
 
 repo=$(echo $GITHUB_REPOSITORY | sed 's/\//\\\//g')
 
-if [[ $commit_msg == *"Merge"* ]]; then
+if [[ "$commit_msg" == *"Merge pull request"* ]]; then
   PR=$(echo "commit_msg" | grep -oE '[0-9]+')
 
   user=$(curl -L \
