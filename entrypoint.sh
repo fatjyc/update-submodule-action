@@ -42,7 +42,7 @@ echo "commit msg: ${commit_msg}"
 repo=$(echo $GITHUB_REPOSITORY | sed 's/\//\\\//g')
 
 if [[ "$commit_msg" == *"Merge pull request"* ]]; then
-  PR=$(echo "commit_msg" | grep -oE '[0-9]+')
+  PR=$(echo "commit_msg" | grep -oE '[0-9]+' | head -n1)
 
   echo "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR}"
 
