@@ -44,19 +44,19 @@ repo=$(echo $GITHUB_REPOSITORY | sed 's/\//\\\//g')
 if [[ "$commit_msg" == *"Merge pull request"* ]]; then
   PR=$(echo "commit_msg" | grep -oE '[0-9]+')
 
-  echo "https://api.github.com/repos/${repo}/pulls/${PR}"
+  echo "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR}"
 
   PR_INFO=$(curl -L \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${INPUT_TOKEN}"\
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    https://api.github.com/repos/${repo}/pulls/${PR})
+    https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR})
 
   user=$(curl -L \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${INPUT_TOKEN}"\
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    https://api.github.com/repos/${repo}/pulls/${PR} | jq .merged_by.login | tr -d '"')
+    https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR} | jq .merged_by.login | tr -d '"')
 
   new_commit_msg=$(echo "$commit_msg" | sed -E "s/Merge pull request #([0-9]+)/Merge PR $repo#\1 by @$user\n/g")
 else
