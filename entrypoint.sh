@@ -44,6 +44,14 @@ repo=$(echo $GITHUB_REPOSITORY | sed 's/\//\\\//g')
 if [[ "$commit_msg" == *"Merge pull request"* ]]; then
   PR=$(echo "commit_msg" | grep -oE '[0-9]+')
 
+  echo "https://api.github.com/repos/${repo}/pulls/${PR}"
+
+  PR_INFO=$(curl -L \
+    -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${INPUT_TOKEN}"\
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    https://api.github.com/repos/${repo}/pulls/${PR})
+
   user=$(curl -L \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${INPUT_TOKEN}"\
