@@ -26,5 +26,5 @@ branding:
   icon: anchor
   color: purple
 runs:
-  using: docker
-  image: Dockerfile
+  using: 'node16'
+  main: 'dist/index.js'

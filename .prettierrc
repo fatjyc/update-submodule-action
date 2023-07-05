@@ -1,0 +1,12 @@
+{
+  "singleQuote": false,
+  "printWidth": 100,
+  "tabWidth": 4,
+  "parser": "typescript",
+  "overrides": [
+    {
+      "files": ".prettierrc",
+      "options": { "parser": "json" }
+    }
+  ]
+}
