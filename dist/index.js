@@ -10846,32 +10846,47 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 1319:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 8954:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
-exports.__esModule = true;
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getInputs = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 function getInputs() {
     return {
-        user: "fatjyc",
-        token: "4ac888a9e5a51fa0690208a1370ca851bd0779b1",
-        repo: "submodule-demo",
-        repo_owner: "fatjyc",
-        committor_username: "robot",
-        committor_email: "robot@jiong.io",
-        path: "deno-server-demo"
+        user: core.getInput("user", { required: true }),
+        token: core.getInput("token", { required: true }),
+        repo: core.getInput("repo", { required: true }),
+        repo_owner: core.getInput("repo_owner", { required: true }),
+        committor_username: core.getInput("committor_username", { required: true }),
+        committor_email: core.getInput("committor_email", { required: true }),
+        path: core.getInput("path", { required: true }),
     };
-    // return {
-    //     user: core.getInput("user", { required: true }),
-    //     token: core.getInput("token", { required: true }),
-    //     repo: core.getInput("repo", { required: true }),
-    //     repo_owner: core.getInput("repo_owner", { required: true }),
-    //     committor_username: core.getInput("committor_username", { required: true }),
-    //     committor_email: core.getInput("committor_email", { required: true }),
-    //     path: core.getInput("path", { required: true }),
-    // };
 }
 exports.getInputs = getInputs;
 
@@ -10923,7 +10938,7 @@ const github = __importStar(__nccwpck_require__(5438));
 const exec = __importStar(__nccwpck_require__(1514));
 const core = __importStar(__nccwpck_require__(2186));
 const io = __importStar(__nccwpck_require__(7351));
-const context_1 = __nccwpck_require__(1319);
+const context_1 = __nccwpck_require__(8954);
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const MERGE_REGEX = /Merge pull request #(\d+) from (.*)/;
@@ -10935,45 +10950,39 @@ const getPRInfo = (octokit, pr) => __awaiter(void 0, void 0, void 0, function* (
     });
     return pullRequest;
 });
+const toTitle = (message) => {
+    const lines = message.split("\n");
+    const title = lines[0];
+    // message double quotes will break the commit message, so we need to escape them
+    return title.replace(/"/g, '\\"');
+};
 const getMessage = (octokit, commit) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
-    let msg = "";
+    var _a, _b, _c, _d;
     if (commit.commit.message.match(MERGE_REGEX)) {
         const matches = commit.commit.message.match(MERGE_REGEX);
         const pr = matches === null || matches === void 0 ? void 0 : matches[1];
-        if (!pr) {
-            msg = `* ${commit.sha.slice(0, 7)} ${commit.commit.message} - @${(_a = commit.author) === null || _a === void 0 ? void 0 : _a.login}`;
-        }
-        else {
+        if (pr) {
             const prInfo = yield getPRInfo(octokit, Number(pr));
-            msg = `* ${commit.sha.slice(0, 7)} ${commit.commit.message
-                .replace(MERGE_REGEX, `PR ${(_c = (_b = prInfo.head) === null || _b === void 0 ? void 0 : _b.repo) === null || _c === void 0 ? void 0 : _c.full_name}#${pr}`)
-                .replace(/\n/g, " ")} - @${(_d = commit.author) === null || _d === void 0 ? void 0 : _d.login}`;
+            return `* ${commit.sha.slice(0, 7)} PR ${(_b = (_a = prInfo.head) === null || _a === void 0 ? void 0 : _a.repo) === null || _b === void 0 ? void 0 : _b.full_name}#${pr} ${toTitle(prInfo.title)} - @${(_c = commit.author) === null || _c === void 0 ? void 0 : _c.login}`;
         }
     }
-    else {
-        msg = `* ${commit.sha.slice(0, 7)} ${commit.commit.message} - @${(_e = commit.author) === null || _e === void 0 ? void 0 : _e.login}`;
-    }
-    return msg;
+    return `* ${commit.sha.slice(0, 7)} ${toTitle(commit.commit.message)} - @${(_d = commit.author) === null || _d === void 0 ? void 0 : _d.login}`;
 });
 function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         // core.info("Update git submodule");
         const input = (0, context_1.getInputs)();
-        //
         const repoUrl = `https://${input.user}:${input.token}@github.com/${input.repo_owner}/${input.repo}.git`;
-        const octokit = github.getOctokit(input.token);
         const repoDir = path_1.default.join(os_1.default.tmpdir(), "repo");
         yield io.mkdirP(repoDir);
         yield exec.exec(`git clone ${repoUrl} ${repoDir}`);
         core.info(`Update submodule ${input.path}`);
-        console.log("repoDir", repoDir);
         const submoduleInfo = yield exec.getExecOutput(`git submodule status ${input.path}`, [], {
             cwd: repoDir,
         });
-        console.log(submoduleInfo.stdout);
         const originCommit = submoduleInfo.stdout.split(" ")[0].slice(1);
+        console.log("originCommit", originCommit);
         yield exec.exec(`git submodule update --init --recursive ${input.path}`, [], {
             cwd: repoDir,
         });
@@ -10984,13 +10993,14 @@ function run() {
         const submoduleNewInfo = yield exec.getExecOutput(`git submodule status ${input.path}`, [], {
             cwd: repoDir,
         });
-        console.log("status", submoduleNewInfo.stdout);
         const newCommit = submoduleNewInfo.stdout.split(" ")[0].slice(1);
         console.log("newCommit", newCommit);
         if (originCommit === newCommit) {
             core.info("No update");
             return;
         }
+        core.info(`Compare ${originCommit} and ${newCommit}`);
+        const octokit = github.getOctokit(input.token);
         const { data: commits } = yield octokit.rest.repos.compareCommits({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
@@ -10999,22 +11009,26 @@ function run() {
         });
         const msg = yield Promise.all(commits.commits.reverse().map((commit) => __awaiter(this, void 0, void 0, function* () { return yield getMessage(octokit, commit); })));
         const author = (_a = commits.commits[0].author) === null || _a === void 0 ? void 0 : _a.login;
+        core.info(`config git user ${input.committor_username} <${input.committor_email}>`);
         yield exec.exec(`git config --global user.email "${input.committor_email}"`, [], {
             cwd: repoDir,
         });
         yield exec.exec(`git config --global user.name "${input.committor_username}"`, [], {
             cwd: repoDir,
         });
+        core.info(`add ${input.path} to git`);
         yield exec.exec(`git add ${input.path}`, [], {
             cwd: repoDir,
         });
         yield exec.exec(`git commit --author="${author} <>"  -m "${msg.join("\n")}"`, [], {
             cwd: repoDir,
         });
+        core.info(`push ${input.path} to git with ref ${github.context.ref}`);
         yield exec.exec(`git push origin ${github.context.ref}`, [], {
             cwd: repoDir,
         });
         yield io.rmRF(path_1.default.join(os_1.default.tmpdir(), "repo"));
+        core.info("Done.");
     });
 }
 try {

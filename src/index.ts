@@ -27,45 +27,46 @@ type Commit = {
     };
 };
 
+const toTitle = (message: string) => {
+    const lines = message.split("\n");
+    const title = lines[0];
+    // message double quotes will break the commit message, so we need to escape them
+    return title.replace(/"/g, '\\"');
+};
+
 const getMessage = async (octokit: ReturnType<typeof github.getOctokit>, commit: Commit) => {
-    let msg = "";
     if (commit.commit.message.match(MERGE_REGEX)) {
         const matches = commit.commit.message.match(MERGE_REGEX);
-        const pr = matches?.[1];
-        if (!pr) {
-            msg = `* ${commit.sha.slice(0, 7)} ${commit.commit.message} - @${commit.author?.login}`;
-        } else {
-            const prInfo = await getPRInfo(octokit, Number(pr));
-            msg = `* ${commit.sha.slice(0, 7)} ${commit.commit.message
-                .replace(MERGE_REGEX, `PR ${prInfo.head?.repo?.full_name}#${pr}`)
-                .replace(/\n/g, " ")} - @${commit.author?.login}`;
-        }
-    } else {
-        msg = `* ${commit.sha.slice(0, 7)} ${commit.commit.message} - @${commit.author?.login}`;
-    }
 
-    return msg;
+        const pr = matches?.[1];
+        if (pr) {
+            const prInfo = await getPRInfo(octokit, Number(pr));
+            return `* ${commit.sha.slice(0, 7)} PR ${prInfo.head?.repo?.full_name}#${pr} ${toTitle(
+                prInfo.title
+            )} - @${commit.author?.login}`;
+        }
+    }
+    return `* ${commit.sha.slice(0, 7)} ${toTitle(commit.commit.message)} - @${
+        commit.author?.login
+    }`;
 };
 
 async function run() {
     // core.info("Update git submodule");
     const input = getInputs();
-    //
     const repoUrl = `https://${input.user}:${input.token}@github.com/${input.repo_owner}/${input.repo}.git`;
-    const octokit = github.getOctokit(input.token);
     const repoDir = path.join(os.tmpdir(), "repo");
     await io.mkdirP(repoDir);
     await exec.exec(`git clone ${repoUrl} ${repoDir}`);
 
     core.info(`Update submodule ${input.path}`);
-    console.log("repoDir", repoDir);
 
     const submoduleInfo = await exec.getExecOutput(`git submodule status ${input.path}`, [], {
         cwd: repoDir,
     });
 
-    console.log(submoduleInfo.stdout);
     const originCommit = submoduleInfo.stdout.split(" ")[0].slice(1);
+    console.log("originCommit", originCommit);
     await exec.exec(`git submodule update --init --recursive ${input.path}`, [], {
         cwd: repoDir,
     });
@@ -80,8 +81,6 @@ async function run() {
         cwd: repoDir,
     });
 
-    console.log("status", submoduleNewInfo.stdout);
-
     const newCommit = submoduleNewInfo.stdout.split(" ")[0].slice(1);
 
     console.log("newCommit", newCommit);
@@ -90,6 +89,10 @@ async function run() {
         core.info("No update");
         return;
     }
+
+    core.info(`Compare ${originCommit} and ${newCommit}`);
+    const octokit = github.getOctokit(input.token);
+
     const { data: commits } = await octokit.rest.repos.compareCommits({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
@@ -103,6 +106,7 @@ async function run() {
 
     const author = commits.commits[0].author?.login;
 
+    core.info(`config git user ${input.committor_username} <${input.committor_email}>`);
     await exec.exec(`git config --global user.email "${input.committor_email}"`, [], {
         cwd: repoDir,
     });
@@ -110,6 +114,7 @@ async function run() {
         cwd: repoDir,
     });
 
+    core.info(`add ${input.path} to git`);
     await exec.exec(`git add ${input.path}`, [], {
         cwd: repoDir,
     });
@@ -118,11 +123,13 @@ async function run() {
         cwd: repoDir,
     });
 
+    core.info(`push ${input.path} to git with ref ${github.context.ref}`);
     await exec.exec(`git push origin ${github.context.ref}`, [], {
         cwd: repoDir,
     });
 
     await io.rmRF(path.join(os.tmpdir(), "repo"));
+    core.info("Done.");
 }
 
 try {
