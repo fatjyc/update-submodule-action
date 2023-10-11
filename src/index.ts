@@ -57,7 +57,11 @@ async function run() {
     const repoUrl = `https://${input.user}:${input.token}@github.com/${input.repo_owner}/${input.repo}.git`;
     const repoDir = path.join(os.tmpdir(), "repo");
     await io.mkdirP(repoDir);
-    await exec.exec(`git clone ${repoUrl} ${repoDir}`);
+    const cloneStatus = await exec.exec(`git clone ${repoUrl} ${repoDir}`);
+    if (cloneStatus !== 0) {
+        core.setFailed("Clone failed");
+        return;
+    }
 
     core.info(`Update submodule ${input.path}`);
 
@@ -67,15 +71,40 @@ async function run() {
 
     const originCommit = submoduleInfo.stdout.split(" ")[0].slice(1);
     console.log("originCommit", originCommit);
-    await exec.exec(`git submodule update --init --recursive ${input.path}`, [], {
-        cwd: repoDir,
+    const submoduleUpdateInitStatus = await exec.exec(
+        `git submodule update --init --recursive ${input.path}`,
+        [],
+        {
+            cwd: repoDir,
+        }
+    );
+
+    if (submoduleUpdateInitStatus !== 0) {
+        core.setFailed("Update submodule failed");
+        return;
+    }
+
+    const submoduleUpdateRemoteStatus = await exec.exec(
+        `git submodule update --remote --merge ${input.path}`,
+        [],
+        {
+            cwd: repoDir,
+        }
+    );
+
+    if (submoduleUpdateRemoteStatus !== 0) {
+        core.setFailed("Update submodule failed");
+        return;
+    }
+
+    const checkoutStatus = await exec.exec(`git checkout ${github.context.ref}`, [], {
+        cwd: `${repoDir}/${input.path}`,
     });
 
-    await exec.exec(`git submodule update --remote --merge ${input.path}`, [], {
-        cwd: repoDir,
-    });
-
-    await exec.exec(`git checkout ${github.context.ref}`, [], { cwd: `${repoDir}/${input.path}` });
+    if (checkoutStatus !== 0) {
+        core.setFailed("Checkout failed");
+        return;
+    }
 
     const submoduleNewInfo = await exec.getExecOutput(`git submodule status ${input.path}`, [], {
         cwd: repoDir,
@@ -124,9 +153,14 @@ async function run() {
     });
 
     core.info(`push ${input.path} to git with ref ${github.context.ref}`);
-    await exec.exec(`git push origin ${github.context.ref}`, [], {
+    const pushStatus = await exec.exec(`git push origin ${github.context.ref}`, [], {
         cwd: repoDir,
     });
+
+    if (pushStatus !== 0) {
+        core.setFailed("Push failed");
+        return;
+    }
 
     await io.rmRF(path.join(os.tmpdir(), "repo"));
     core.info("Done.");

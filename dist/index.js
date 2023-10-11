@@ -10976,20 +10976,38 @@ function run() {
         const repoUrl = `https://${input.user}:${input.token}@github.com/${input.repo_owner}/${input.repo}.git`;
         const repoDir = path_1.default.join(os_1.default.tmpdir(), "repo");
         yield io.mkdirP(repoDir);
-        yield exec.exec(`git clone ${repoUrl} ${repoDir}`);
+        const cloneStatus = yield exec.exec(`git clone ${repoUrl} ${repoDir}`);
+        if (cloneStatus !== 0) {
+            core.setFailed("Clone failed");
+            return;
+        }
         core.info(`Update submodule ${input.path}`);
         const submoduleInfo = yield exec.getExecOutput(`git submodule status ${input.path}`, [], {
             cwd: repoDir,
         });
         const originCommit = submoduleInfo.stdout.split(" ")[0].slice(1);
         console.log("originCommit", originCommit);
-        yield exec.exec(`git submodule update --init --recursive ${input.path}`, [], {
+        const submoduleUpdateInitStatus = yield exec.exec(`git submodule update --init --recursive ${input.path}`, [], {
             cwd: repoDir,
         });
-        yield exec.exec(`git submodule update --remote --merge ${input.path}`, [], {
+        if (submoduleUpdateInitStatus !== 0) {
+            core.setFailed("Update submodule failed");
+            return;
+        }
+        const submoduleUpdateRemoteStatus = yield exec.exec(`git submodule update --remote --merge ${input.path}`, [], {
             cwd: repoDir,
         });
-        yield exec.exec(`git checkout ${github.context.ref}`, [], { cwd: `${repoDir}/${input.path}` });
+        if (submoduleUpdateRemoteStatus !== 0) {
+            core.setFailed("Update submodule failed");
+            return;
+        }
+        const checkoutStatus = yield exec.exec(`git checkout ${github.context.ref}`, [], {
+            cwd: `${repoDir}/${input.path}`,
+        });
+        if (checkoutStatus !== 0) {
+            core.setFailed("Checkout failed");
+            return;
+        }
         const submoduleNewInfo = yield exec.getExecOutput(`git submodule status ${input.path}`, [], {
             cwd: repoDir,
         });
@@ -11024,9 +11042,13 @@ function run() {
             cwd: repoDir,
         });
         core.info(`push ${input.path} to git with ref ${github.context.ref}`);
-        yield exec.exec(`git push origin ${github.context.ref}`, [], {
+        const pushStatus = yield exec.exec(`git push origin ${github.context.ref}`, [], {
             cwd: repoDir,
         });
+        if (pushStatus !== 0) {
+            core.setFailed("Push failed");
+            return;
+        }
         yield io.rmRF(path_1.default.join(os_1.default.tmpdir(), "repo"));
         core.info("Done.");
     });
